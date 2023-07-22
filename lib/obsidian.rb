@@ -18,19 +18,23 @@ class ObsidianFlatConverter < ObsidianConverter
   def convert(workspace)
     internal_link_regexp = /\[([^\]]*)\]\(<[^\)]*\)/
     diff_workspace_regexp = /\[([^\]]*)\]\((https:\/\/app.nuclino.com[^\)]*)\)/
+    special_char_regexp = /[&|\?|:|\/|\\'!]/
     workspace.keys.each do |key|
       short_filename = key
       orig_filename, id = workspace[key]
-#      puts "processing #{orig_filename} #{short_filename} #{id}"
+      puts "processing #{orig_filename} #{short_filename} #{id}"
       content = File.read(orig_filename)
       while content =~ internal_link_regexp
         new_link = $1
-        new_link.gsub(/[&|\?|:|\/|\\]/, '_')
-        content = content.sub(internal_link_regexp, "[[#{$1}]]")
+        puts "got new_link: #{new_link}"
+        new_link.gsub!(special_char_regexp, '_')
+        puts "modded new_link: #{new_link}"
+        content = content.sub(internal_link_regexp, "[[#{new_link}]]")
       end
       if content =~ diff_workspace_regexp
-        puts "got external link to different workspace: #{$1} #{$2}"
+        puts "got external link to different workspace: #{new_link} #{$2}"
       end
+      short_filename = short_filename.gsub(special_char_regexp, '_')
       File.open("#{@output_dir}/#{short_filename}.md", 'w') do |f|
         f.write(content)
       end
