@@ -24,6 +24,8 @@ class ObsidianFlatConverter < ObsidianConverter
 #      puts "processing #{orig_filename} #{short_filename} #{id}"
       content = File.read(orig_filename)
       while content =~ internal_link_regexp
+        new_link = $1
+        new_link.gsub(/[&|\?|:|\/|\\]/, '_')
         content = content.sub(internal_link_regexp, "[[#{$1}]]")
       end
       if content =~ diff_workspace_regexp
